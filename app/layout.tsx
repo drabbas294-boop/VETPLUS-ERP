@@ -1,8 +1,7 @@
-import './globals.css'
+import '../globals.css'
 import Link from 'next/link'
 import { headers } from 'next/headers'
-import { getServerSession } from 'next-auth'
-import { authConfig } from '@/lib/auth'
+import { auth } from '@/auth'
 
 export const metadata = {
   title: 'PetFood ERP',
@@ -10,8 +9,27 @@ export const metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authConfig as any)
+  const session = await auth()
   const path = (await headers()).get('x-invoke-path') || ''
+
+  const moduleLinks = [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/items', label: 'Items' },
+    { href: '/suppliers', label: 'Suppliers' },
+    { href: '/inventory/lots', label: 'Lots' },
+    { href: '/sales', label: 'Sales' },
+    { href: '/purchase', label: 'Purchase' },
+    { href: '/pos', label: 'POS' },
+    { href: '/inventory', label: 'Inventory' },
+    { href: '/imports', label: 'Imports' },
+    { href: '/crm', label: 'CRM' },
+    { href: '/assets', label: 'Assets' },
+    { href: '/finance', label: 'Finance' },
+    { href: '/hr', label: 'HR' },
+    { href: '/manufacturing', label: 'Manufacturing' },
+    { href: '/services', label: 'Services' },
+    { href: '/security', label: 'Security' },
+  ]
 
   return (
     <html lang="en">
@@ -22,13 +40,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <div className="h-8 w-8 rounded-lg bg-gray-900" />
               <span className="font-semibold">PetFood ERP</span>
             </div>
-            <nav className="flex gap-2">
+            <nav className="flex flex-wrap gap-2">
               {session ? (
                 <>
-                  <Link className="btn" href="/dashboard">Dashboard</Link>
-                  <Link className="btn" href="/items">Items</Link>
-                  <Link className="btn" href="/suppliers">Suppliers</Link>
-                  <Link className="btn" href="/inventory/lots">Lots</Link>
+                  {moduleLinks.map((link) => (
+                    <Link key={link.href} className="btn" href={link.href}>
+                      {link.label}
+                    </Link>
+                  ))}
                   <Link className="btn" href="/api/auth/signout?callbackUrl=/login">Sign out</Link>
                 </>
               ) : (
