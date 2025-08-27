@@ -1,0 +1,250 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions Session[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  sessionToken String   @unique
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  ADMIN
+  USER
+  QA
+  PLANNER
+  WMS
+  SALES
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  score     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     Item[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  city      String?
+  creditLimit Float? @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Warehouse {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  bins      Bin[]
+}
+
+model Bin {
+  id          String   @id @default(cuid())
+  code        String
+  warehouseId String
+  warehouse   Warehouse @relation(fields:[warehouseId], references:[id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lots        InventoryLot[]
+  @@unique([code, warehouseId])
+}
+
+model Item {
+  id          String   @id @default(cuid())
+  sku         String   @unique
+  name        String
+  category    ItemCategory
+  uom         String   // e.g., kg, bag, carton
+  isActive    Boolean  @default(true)
+  supplierId  String?
+  supplier    Supplier? @relation(fields:[supplierId], references:[id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  specs       Spec[]
+  lots        InventoryLot[]
+  bomParents  BOMLine[] @relation("BOMItemParent")
+  bomChildOf  BOMLine[] @relation("BOMItemChild")
+}
+
+enum ItemCategory {
+  RAW_MATERIAL
+  PACKAGING
+  FINISHED_GOOD
+  WIP
+}
+
+model Spec {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Item     @relation(fields:[itemId], references:[id], onDelete: Cascade)
+  protein   Float?
+  fat       Float?
+  fiber     Float?
+  moisture  Float?
+  ash       Float?
+  allergens String?  // comma-separated
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InventoryLot {
+  id          String   @id @default(cuid())
+  itemId      String
+  item        Item     @relation(fields:[itemId], references:[id], onDelete: Cascade)
+  lotNumber   String
+  qty         Float
+  uom         String
+  status      LotStatus @default(QUARANTINE)
+  expiryDate  DateTime?
+  binId       String?
+  bin         Bin?     @relation(fields:[binId], references:[id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([itemId, lotNumber])
+}
+
+enum LotStatus {
+  QUARANTINE
+  RELEASED
+  HOLD
+}
+
+model Formulation {
+  id        String   @id @default(cuid())
+  itemId    String   // Finished Good
+  item      Item     @relation(fields:[itemId], references:[id], onDelete: Cascade)
+  version   Int      @default(1)
+  moistureBasis String? // as-is/dry
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lines     BOMLine[]
+}
+
+model BOMLine {
+  id            String   @id @default(cuid())
+  parentId      String
+  parent        Item     @relation("BOMItemParent", fields:[parentId], references:[id], onDelete: Cascade)
+  childId       String
+  child         Item     @relation("BOMItemChild", fields:[childId], references:[id], onDelete: Cascade)
+  qty           Float
+  uom           String
+  lossFactorPct Float?   // moisture loss, etc.
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ProductionBatch {
+  id           String   @id @default(cuid())
+  fgItemId     String
+  fgItem       Item     @relation(fields:[fgItemId], references:[id], onDelete: Cascade)
+  batchNumber  String   @unique
+  plannedQty   Float
+  uom          String
+  status       BatchStatus @default(PLANNED)
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum BatchStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  QC_HOLD
+  RELEASED
+}
+
+model SalesOrder {
+  id        String   @id @default(cuid())
+  orderNo   String   @unique
+  customerId String
+  customer  Customer @relation(fields:[customerId], references:[id], onDelete: Cascade)
+  status    SOStatus @default(DRAFT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lines     SalesOrderLine[]
+}
+
+enum SOStatus {
+  DRAFT
+  CONFIRMED
+  SHIPPED
+  INVOICED
+  CLOSED
+}
+
+model SalesOrderLine {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      SalesOrder @relation(fields:[orderId], references:[id], onDelete: Cascade)
+  itemId     String
+  item       Item     @relation(fields:[itemId], references:[id])
+  qty        Float
+  uom        String
+  unitPrice  Float
+}
+
+model QCTest {
+  id          String   @id @default(cuid())
+  lotId       String
+  lot         InventoryLot @relation(fields:[lotId], references:[id], onDelete: Cascade)
+  protein     Float?
+  fat         Float?
+  fiber       Float?
+  moisture    Float?
+  ash         Float?
+  microPass   Boolean?
+  status      QCStatus @default(PENDING)
+  resultNote  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum QCStatus {
+  PENDING
+  PASS
+  FAIL
+}
+
+model COA {
+  id         String   @id @default(cuid())
+  lotId      String   @unique
+  lot        InventoryLot @relation(fields:[lotId], references:[id], onDelete: Cascade)
+  url        String?  // link to PDF stored elsewhere
+  createdAt  DateTime @default(now())
+}
