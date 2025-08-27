@@ -2,11 +2,19 @@ import BatchForm from '@/BatchForm'
 import BatchTable from '@/BatchTable'
 import { prisma } from '@/lib/prisma'
 
+async function loadBatches() {
+  try {
+    return await prisma.productionBatch.findMany({
+      include: { fgItem: true },
+      orderBy: { createdAt: 'desc' }
+    })
+  } catch {
+    return []
+  }
+}
+
 export default async function Page() {
-  const batches = await prisma.productionBatch.findMany({
-    include: { fgItem: true },
-    orderBy: { createdAt: 'desc' }
-  })
+  const batches = await loadBatches()
   return (
     <div>
       <h1 className="text-xl font-bold mb-4">Manufacturing</h1>

@@ -1,11 +1,19 @@
 import SalesOrderForm from './SalesOrderForm'
 import { prisma } from '@/lib/prisma'
 
+async function loadOrders() {
+  try {
+    return await prisma.salesOrder.findMany({
+      include: { customer: true, lines: { include: { item: true } } },
+      orderBy: { createdAt: 'desc' }
+    })
+  } catch {
+    return []
+  }
+}
+
 export default async function Page() {
-  const orders = await prisma.salesOrder.findMany({
-    include: { customer: true, lines: { include: { item: true } } },
-    orderBy: { createdAt: 'desc' }
-  })
+  const orders = await loadOrders()
 
   return (
     <div>
