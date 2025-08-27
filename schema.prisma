@@ -49,15 +49,16 @@ model Supplier {
 }
 
 model Customer {
-  id        String   @id @default(cuid())
-  name      String
-  email     String?
-  phone     String?
-  address   String?
-  city      String?
-  creditLimit Float? @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String       @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+  city        String?
+  creditLimit Float?       @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  orders      SalesOrder[]
 }
 
 model Warehouse {
@@ -71,32 +72,36 @@ model Warehouse {
 }
 
 model Bin {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   code        String
   warehouseId String
-  warehouse   Warehouse @relation(fields:[warehouseId], references:[id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  warehouse   Warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   lots        InventoryLot[]
+
   @@unique([code, warehouseId])
 }
 
 model Item {
-  id          String   @id @default(cuid())
-  sku         String   @unique
-  name        String
-  category    ItemCategory
-  uom         String   // e.g., kg, bag, carton
-  isActive    Boolean  @default(true)
-  supplierId  String?
-  supplier    Supplier? @relation(fields:[supplierId], references:[id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String       @id @default(cuid())
+  sku        String       @unique
+  name       String
+  category   ItemCategory
+  uom        String // e.g., kg, bag, carton
+  isActive   Boolean      @default(true)
+  supplierId String?
+  supplier   Supplier?    @relation(fields: [supplierId], references: [id])
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
-  specs       Spec[]
-  lots        InventoryLot[]
-  bomParents  BOMLine[] @relation("BOMItemParent")
-  bomChildOf  BOMLine[] @relation("BOMItemChild")
+  specs        Spec[]
+  lots         InventoryLot[]
+  bomParents   BOMLine[]         @relation("BOMItemParent")
+  bomChildOf   BOMLine[]         @relation("BOMItemChild")
+  formulations Formulation[]
+  batches      ProductionBatch[]
+  salesLines   SalesOrderLine[]
 }
 
 enum ItemCategory {
@@ -109,30 +114,32 @@ enum ItemCategory {
 model Spec {
   id        String   @id @default(cuid())
   itemId    String
-  item      Item     @relation(fields:[itemId], references:[id], onDelete: Cascade)
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   protein   Float?
   fat       Float?
   fiber     Float?
   moisture  Float?
   ash       Float?
-  allergens String?  // comma-separated
+  allergens String? // comma-separated
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model InventoryLot {
-  id          String   @id @default(cuid())
-  itemId      String
-  item        Item     @relation(fields:[itemId], references:[id], onDelete: Cascade)
-  lotNumber   String
-  qty         Float
-  uom         String
-  status      LotStatus @default(QUARANTINE)
-  expiryDate  DateTime?
-  binId       String?
-  bin         Bin?     @relation(fields:[binId], references:[id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String    @id @default(cuid())
+  itemId     String
+  item       Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  lotNumber  String
+  qty        Float
+  uom        String
+  status     LotStatus @default(QUARANTINE)
+  expiryDate DateTime?
+  binId      String?
+  bin        Bin?      @relation(fields: [binId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  qcTests    QCTest[]
+  coa        COA?
 
   @@unique([itemId, lotNumber])
 }
@@ -144,41 +151,43 @@ enum LotStatus {
 }
 
 model Formulation {
-  id        String   @id @default(cuid())
-  itemId    String   // Finished Good
-  item      Item     @relation(fields:[itemId], references:[id], onDelete: Cascade)
-  version   Int      @default(1)
+  id            String    @id @default(cuid())
+  itemId        String // Finished Good
+  item          Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  version       Int       @default(1)
   moistureBasis String? // as-is/dry
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  lines     BOMLine[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lines         BOMLine[]
 }
 
 model BOMLine {
-  id            String   @id @default(cuid())
+  id            String       @id @default(cuid())
   parentId      String
-  parent        Item     @relation("BOMItemParent", fields:[parentId], references:[id], onDelete: Cascade)
+  parent        Item         @relation("BOMItemParent", fields: [parentId], references: [id], onDelete: Cascade)
   childId       String
-  child         Item     @relation("BOMItemChild", fields:[childId], references:[id], onDelete: Cascade)
+  child         Item         @relation("BOMItemChild", fields: [childId], references: [id], onDelete: Cascade)
+  formulationId String?
+  formulation   Formulation? @relation(fields: [formulationId], references: [id], onDelete: Cascade)
   qty           Float
   uom           String
-  lossFactorPct Float?   // moisture loss, etc.
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  lossFactorPct Float? // moisture loss, etc.
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model ProductionBatch {
-  id           String   @id @default(cuid())
-  fgItemId     String
-  fgItem       Item     @relation(fields:[fgItemId], references:[id], onDelete: Cascade)
-  batchNumber  String   @unique
-  plannedQty   Float
-  uom          String
-  status       BatchStatus @default(PLANNED)
-  startedAt    DateTime?
-  finishedAt   DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String      @id @default(cuid())
+  fgItemId    String
+  fgItem      Item        @relation(fields: [fgItemId], references: [id], onDelete: Cascade)
+  batchNumber String      @unique
+  plannedQty  Float
+  uom         String
+  status      BatchStatus @default(PLANNED)
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 enum BatchStatus {
@@ -190,14 +199,14 @@ enum BatchStatus {
 }
 
 model SalesOrder {
-  id        String   @id @default(cuid())
-  orderNo   String   @unique
+  id         String           @id @default(cuid())
+  orderNo    String           @unique
   customerId String
-  customer  Customer @relation(fields:[customerId], references:[id], onDelete: Cascade)
-  status    SOStatus @default(DRAFT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  lines     SalesOrderLine[]
+  customer   Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  status     SOStatus         @default(DRAFT)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  lines      SalesOrderLine[]
 }
 
 enum SOStatus {
@@ -209,30 +218,30 @@ enum SOStatus {
 }
 
 model SalesOrderLine {
-  id         String   @id @default(cuid())
-  orderId    String
-  order      SalesOrder @relation(fields:[orderId], references:[id], onDelete: Cascade)
-  itemId     String
-  item       Item     @relation(fields:[itemId], references:[id])
-  qty        Float
-  uom        String
-  unitPrice  Float
+  id        String     @id @default(cuid())
+  orderId   String
+  order     SalesOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemId    String
+  item      Item       @relation(fields: [itemId], references: [id])
+  qty       Float
+  uom       String
+  unitPrice Float
 }
 
 model QCTest {
-  id          String   @id @default(cuid())
-  lotId       String
-  lot         InventoryLot @relation(fields:[lotId], references:[id], onDelete: Cascade)
-  protein     Float?
-  fat         Float?
-  fiber       Float?
-  moisture    Float?
-  ash         Float?
-  microPass   Boolean?
-  status      QCStatus @default(PENDING)
-  resultNote  String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String       @id @default(cuid())
+  lotId      String
+  lot        InventoryLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  protein    Float?
+  fat        Float?
+  fiber      Float?
+  moisture   Float?
+  ash        Float?
+  microPass  Boolean?
+  status     QCStatus     @default(PENDING)
+  resultNote String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 }
 
 enum QCStatus {
@@ -242,9 +251,26 @@ enum QCStatus {
 }
 
 model COA {
-  id         String   @id @default(cuid())
-  lotId      String   @unique
-  lot        InventoryLot @relation(fields:[lotId], references:[id], onDelete: Cascade)
-  url        String?  // link to PDF stored elsewhere
-  createdAt  DateTime @default(now())
+  id        String       @id @default(cuid())
+  lotId     String       @unique
+  lot       InventoryLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  url       String? // link to PDF stored elsewhere
+  createdAt DateTime     @default(now())
+}
+
+model Employee {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  position  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LedgerEntry {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  description String
+  amount      Float
+  createdAt   DateTime @default(now())
 }
