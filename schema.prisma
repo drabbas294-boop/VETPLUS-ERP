@@ -55,7 +55,7 @@ model Customer {
   phone       String?
   address     String?
   city        String?
-  creditLimit Float?       @default(0)
+  creditLimit Float        @default(0)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   orders      SalesOrder[]
@@ -273,4 +273,5 @@ model LedgerEntry {
   description String
   amount      Float
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
