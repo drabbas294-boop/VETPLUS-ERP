@@ -1,11 +1,12 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { ItemCategory } from '@prisma/client'
 
 const schema = z.object({
   sku: z.string().min(1),
   name: z.string().min(1),
-  category: z.string().min(1),
+  category: z.nativeEnum(ItemCategory),
   uom: z.string().min(1)
 })
 

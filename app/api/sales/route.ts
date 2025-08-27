@@ -27,15 +27,14 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(data)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.format() }, { status: 400 })
   try {
-    const customer = await prisma.customer.upsert({
-      where: { name: parsed.data.customerName },
-      update: {},
-      create: { name: parsed.data.customerName }
-    })
+    const customer = await prisma.customer.findFirst({ where: { name: parsed.data.customerName } })
+    const customerId = customer
+      ? customer.id
+      : (await prisma.customer.create({ data: { name: parsed.data.customerName } })).id
     const order = await prisma.salesOrder.create({
       data: {
         orderNo: parsed.data.orderNo,
-        customerId: customer.id,
+        customerId,
         lines: {
           create: parsed.data.lines.map(l => ({ itemId: l.itemId, qty: l.qty, uom: 'ea', unitPrice: l.unitPrice }))
         }

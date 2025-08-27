@@ -1,8 +1,7 @@
-import './globals.css'
+import '../globals.css'
 import Link from 'next/link'
 import { headers } from 'next/headers'
-import { getServerSession } from 'next-auth'
-import { authConfig } from '@/lib/auth'
+import { auth } from '@/auth'
 
 export const metadata = {
   title: 'PetFood ERP',
@@ -10,7 +9,7 @@ export const metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authConfig as any)
+  const session = await auth()
   const path = (await headers()).get('x-invoke-path') || ''
 
   const moduleLinks = [
