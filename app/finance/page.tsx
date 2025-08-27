@@ -15,6 +15,11 @@ export default function FinancePage() {
   }
   useEffect(() => { load() }, [])
 
+  async function remove(id: string) {
+    await axios.delete(`/api/ledger/${id}`)
+    load()
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -44,11 +49,16 @@ export default function FinancePage() {
       </form>
       <table className="table-auto w-full">
         <thead>
-          <tr><th className="px-2 py-1">Date</th><th className="px-2 py-1">Description</th><th className="px-2 py-1">Amount</th></tr>
+          <tr><th className="px-2 py-1">Date</th><th className="px-2 py-1">Description</th><th className="px-2 py-1">Amount</th><th className="px-2 py-1" /></tr>
         </thead>
         <tbody>
           {entries.map(en => (
-            <tr key={en.id} className="border-t"><td className="px-2 py-1">{new Date(en.date).toLocaleDateString()}</td><td className="px-2 py-1">{en.description}</td><td className="px-2 py-1">{en.amount.toFixed(2)}</td></tr>
+            <tr key={en.id} className="border-t">
+              <td className="px-2 py-1">{new Date(en.date).toLocaleDateString()}</td>
+              <td className="px-2 py-1">{en.description}</td>
+              <td className="px-2 py-1">{en.amount.toFixed(2)}</td>
+              <td className="px-2 py-1 text-right"><button onClick={() => remove(en.id)} className="text-red-600 text-sm">Delete</button></td>
+            </tr>
           ))}
         </tbody>
       </table>

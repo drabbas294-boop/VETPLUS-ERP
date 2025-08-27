@@ -15,6 +15,11 @@ export default function HRPage() {
   }
   useEffect(() => { load() }, [])
 
+  async function remove(id: string) {
+    await axios.delete(`/api/employees/${id}`)
+    load()
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -44,11 +49,16 @@ export default function HRPage() {
       </form>
       <table className="table-auto w-full">
         <thead>
-          <tr><th className="px-2 py-1">Name</th><th className="px-2 py-1">Email</th><th className="px-2 py-1">Position</th></tr>
+          <tr><th className="px-2 py-1">Name</th><th className="px-2 py-1">Email</th><th className="px-2 py-1">Position</th><th className="px-2 py-1" /></tr>
         </thead>
         <tbody>
           {employees.map(emp => (
-            <tr key={emp.id} className="border-t"><td className="px-2 py-1">{emp.name}</td><td className="px-2 py-1">{emp.email}</td><td className="px-2 py-1">{emp.position}</td></tr>
+            <tr key={emp.id} className="border-t">
+              <td className="px-2 py-1">{emp.name}</td>
+              <td className="px-2 py-1">{emp.email}</td>
+              <td className="px-2 py-1">{emp.position}</td>
+              <td className="px-2 py-1 text-right"><button onClick={() => remove(emp.id)} className="text-red-600 text-sm">Delete</button></td>
+            </tr>
           ))}
         </tbody>
       </table>

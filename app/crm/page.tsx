@@ -14,6 +14,11 @@ export default function CRMPage() {
     setCustomers(res.data)
   }
 
+  async function remove(id: string) {
+    await axios.delete(`/api/customers/${id}`)
+    load()
+  }
+
   useEffect(() => { load() }, [])
 
   async function submit(e: React.FormEvent) {
@@ -41,11 +46,17 @@ export default function CRMPage() {
       </form>
       <table className="table-auto w-full">
         <thead>
-          <tr><th className="px-2 py-1">Name</th><th className="px-2 py-1">Email</th></tr>
+          <tr><th className="px-2 py-1">Name</th><th className="px-2 py-1">Email</th><th className="px-2 py-1" /></tr>
         </thead>
         <tbody>
           {customers.map(c=> (
-            <tr key={c.id} className="border-t"><td className="px-2 py-1">{c.name}</td><td className="px-2 py-1">{c.email}</td></tr>
+            <tr key={c.id} className="border-t">
+              <td className="px-2 py-1">{c.name}</td>
+              <td className="px-2 py-1">{c.email}</td>
+              <td className="px-2 py-1 text-right">
+                <button onClick={() => remove(c.id)} className="text-red-600 text-sm">Delete</button>
+              </td>
+            </tr>
           ))}
         </tbody>
       </table>
