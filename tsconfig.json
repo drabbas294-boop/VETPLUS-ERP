@@ -23,7 +23,8 @@
       ]
     },
     "types": [
-      "next-auth"
+      "next-auth",
+      "jest"
     ],
     "incremental": true,
     "plugins": [
