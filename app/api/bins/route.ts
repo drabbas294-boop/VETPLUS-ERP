@@ -25,7 +25,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.format() }, { status: 400 })
   }
   try {
-    const bin = await prisma.bin.create({ data: parsed.data })
+    const bin = await prisma.bin.create({
+      data: parsed.data,
+      include: { warehouse: true }
+    })
     return NextResponse.json(bin)
   } catch (e: any) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
