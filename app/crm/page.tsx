@@ -8,26 +8,44 @@ export default function CRMPage() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [form, setForm] = useState({ name: '', email: '' })
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function load() {
-    const res = await axios.get('/api/customers')
-    setCustomers(res.data)
+    try {
+      const res = await axios.get('/api/customers')
+      setCustomers(res.data)
+      setError(null)
+    } catch {
+      setError('Failed to load customers')
+    }
   }
 
   async function remove(id: string) {
-    await axios.delete(`/api/customers/${id}`)
-    load()
+    try {
+      await axios.delete(`/api/customers/${id}`)
+      load()
+    } catch {
+      setError('Failed to delete customer')
+    }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+  }, [])
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    await axios.post('/api/customers', form)
-    setForm({ name: '', email: '' })
-    setLoading(false)
-    load()
+    try {
+      await axios.post('/api/customers', form)
+      setForm({ name: '', email: '' })
+      setError(null)
+      load()
+    } catch {
+      setError('Failed to add customer')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -43,6 +61,7 @@ export default function CRMPage() {
           <input className="input" value={form.email} onChange={e=>setForm({...form, email:e.target.value})} />
         </div>
         <button className="btn" disabled={loading}>{loading?'Saving...':'Add Customer'}</button>
+        {error && <p className="text-sm text-red-600">{error}</p>}
       </form>
       <table className="table-auto w-full">
         <thead>
