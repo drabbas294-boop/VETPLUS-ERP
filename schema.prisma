@@ -36,6 +36,7 @@ model Supplier {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   items     Item[]
+  purchaseOrders PurchaseOrder[]
 }
 
 model Customer {
@@ -92,6 +93,9 @@ model Item {
   formulations Formulation[]
   batches      ProductionBatch[]
   salesLines   SalesOrderLine[]
+  purchaseLines PurchaseOrderLine[]
+  posSales     POSale[]
+  importRecords ImportRecord[]
 }
 
 enum ItemCategory {
@@ -264,4 +268,77 @@ model LedgerEntry {
   amount      Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model PurchaseOrder {
+  id         String      @id @default(cuid())
+  orderNo    String      @unique
+  supplierId String
+  supplier   Supplier    @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  status     POStatus    @default(DRAFT)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  lines      PurchaseOrderLine[]
+}
+
+model PurchaseOrderLine {
+  id        String        @id @default(cuid())
+  orderId   String
+  order     PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemId    String
+  item      Item          @relation(fields: [itemId], references: [id])
+  qty       Float
+  uom       String
+  unitCost  Float
+}
+
+enum POStatus {
+  DRAFT
+  ORDERED
+  RECEIVED
+  CLOSED
+}
+
+model POSale {
+  id        String   @id @default(cuid())
+  saleNo    String   @unique
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id])
+  qty       Float
+  uom       String
+  unitPrice Float
+  date      DateTime @default(now())
+}
+
+model ImportRecord {
+  id          String   @id @default(cuid())
+  itemId      String
+  item        Item     @relation(fields: [itemId], references: [id])
+  qty         Float
+  uom         String
+  arrivalDate DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model ServiceOrder {
+  id          String        @id @default(cuid())
+  description String
+  status      ServiceStatus @default(OPEN)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+enum ServiceStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Asset {
+  id         String   @id @default(cuid())
+  name       String
+  value      Float
+  acquiredAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

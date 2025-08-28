@@ -2,15 +2,12 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
-const schema = z.object({
-  code: z.string().min(1),
-  warehouseId: z.string().min(1)
-})
+const schema = z.object({ name: z.string().min(1), value: z.number(), acquiredAt: z.string().optional() })
 
 export async function GET() {
   try {
-    const bins = await prisma.bin.findMany({ include: { warehouse: true } })
-    return NextResponse.json(bins)
+    const assets = await prisma.asset.findMany({ orderBy: { createdAt: 'desc' } })
+    return NextResponse.json(assets)
   } catch {
     return NextResponse.json([], { status: 500 })
   }
@@ -21,8 +18,8 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(data)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.format() }, { status: 400 })
   try {
-    const bin = await prisma.bin.create({ data: parsed.data })
-    return NextResponse.json(bin)
+    const asset = await prisma.asset.create({ data: { name: parsed.data.name, value: parsed.data.value, acquiredAt: parsed.data.acquiredAt ? new Date(parsed.data.acquiredAt) : null } })
+    return NextResponse.json(asset)
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
