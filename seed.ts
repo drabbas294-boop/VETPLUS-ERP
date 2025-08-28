@@ -23,10 +23,47 @@ async function main() {
   const sup = await prisma.supplier.create({ data: { name: 'Global Meats', email: 'supply@globalmeats.com', phone: '+1-222-333-4444', score: 85 } })
 
   // Items
-  const chickenMeal = await prisma.item.create({ data: { sku: 'RM-CHK-001', name: 'Chicken Meal', category: 'RAW_MATERIAL', uom: 'kg', supplierId: sup.id } })
-  const premix = await prisma.item.create({ data: { sku: 'RM-PREMIX-01', name: 'Vitamin Premix', category: 'RAW_MATERIAL', uom: 'kg' } })
-  const bag = await prisma.item.create({ data: { sku: 'PK-BAG-1KG', name: '1kg Pouch', category: 'PACKAGING', uom: 'pcs' } })
-  const kibble = await prisma.item.create({ data: { sku: 'FG-CAT-ADULT-1KG-CHK', name: 'Cat Kibble Adult Chicken 1kg', category: 'FINISHED_GOOD', uom: 'bag' } })
+  const chickenMeal = await prisma.item.upsert({
+    where: { sku: 'RM-CHK-001' },
+    update: {},
+    create: {
+      sku: 'RM-CHK-001',
+      name: 'Chicken Meal',
+      category: 'RAW_MATERIAL',
+      uom: 'kg',
+      supplierId: sup.id
+    }
+  })
+  const premix = await prisma.item.upsert({
+    where: { sku: 'RM-PREMIX-01' },
+    update: {},
+    create: {
+      sku: 'RM-PREMIX-01',
+      name: 'Vitamin Premix',
+      category: 'RAW_MATERIAL',
+      uom: 'kg'
+    }
+  })
+  const bag = await prisma.item.upsert({
+    where: { sku: 'PK-BAG-1KG' },
+    update: {},
+    create: {
+      sku: 'PK-BAG-1KG',
+      name: '1kg Pouch',
+      category: 'PACKAGING',
+      uom: 'pcs'
+    }
+  })
+  const kibble = await prisma.item.upsert({
+    where: { sku: 'FG-CAT-ADULT-1KG-CHK' },
+    update: {},
+    create: {
+      sku: 'FG-CAT-ADULT-1KG-CHK',
+      name: 'Cat Kibble Adult Chicken 1kg',
+      category: 'FINISHED_GOOD',
+      uom: 'bag'
+    }
+  })
 
   // Lots
   await prisma.inventoryLot.createMany({
@@ -34,7 +71,8 @@ async function main() {
       { itemId: chickenMeal.id, lotNumber: 'CM240801', qty: 5000, uom: 'kg', status: 'QUARANTINE', binId: wh.id ? (await prisma.bin.findFirst({ where: { warehouseId: wh.id } }))?.id : null },
       { itemId: premix.id, lotNumber: 'PM2407A', qty: 400, uom: 'kg', status: 'RELEASED' },
       { itemId: bag.id, lotNumber: 'BAG2408', qty: 10000, uom: 'pcs', status: 'RELEASED' }
-    ]
+    ],
+    skipDuplicates: true
   })
 
   console.log('Seeded: admin user, sample warehouses/bins, suppliers, items, lots.')
