@@ -27,5 +27,6 @@ export const { auth, handlers: { GET, POST }, signIn, signOut } = NextAuth({
         return { id: user.id, email: user.email, name: user.name, role: user.role }
       }
     })
-  ]
+  ],
+  secret: process.env.NEXTAUTH_SECRET
 })

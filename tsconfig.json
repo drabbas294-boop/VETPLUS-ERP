@@ -23,7 +23,8 @@
       ]
     },
     "types": [
-      "next-auth"
+      "next-auth",
+      "node"
     ],
     "incremental": true,
     "plugins": [

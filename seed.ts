@@ -16,8 +16,16 @@ async function main() {
     update: {},
     create: { code: 'MAIN', name: 'Main Warehouse', address: 'HQ' }
   })
-  await prisma.bin.upsert({ where: { id: 'seed_ignore_1' }, update: {}, create: { id: 'seed_ignore_1', code: 'A-01', warehouseId: wh.id } })
-  await prisma.bin.upsert({ where: { id: 'seed_ignore_2' }, update: {}, create: { id: 'seed_ignore_2', code: 'A-02', warehouseId: wh.id } })
+  const binA01 = await prisma.bin.upsert({
+    where: { code_warehouseId: { code: 'A-01', warehouseId: wh.id } },
+    update: {},
+    create: { code: 'A-01', warehouseId: wh.id }
+  })
+  await prisma.bin.upsert({
+    where: { code_warehouseId: { code: 'A-02', warehouseId: wh.id } },
+    update: {},
+    create: { code: 'A-02', warehouseId: wh.id }
+  })
 
   // Suppliers
   const sup = await prisma.supplier.create({ data: { name: 'Global Meats', email: 'supply@globalmeats.com', phone: '+1-222-333-4444', score: 85 } })
@@ -26,12 +34,12 @@ async function main() {
   const chickenMeal = await prisma.item.create({ data: { sku: 'RM-CHK-001', name: 'Chicken Meal', category: 'RAW_MATERIAL', uom: 'kg', supplierId: sup.id } })
   const premix = await prisma.item.create({ data: { sku: 'RM-PREMIX-01', name: 'Vitamin Premix', category: 'RAW_MATERIAL', uom: 'kg' } })
   const bag = await prisma.item.create({ data: { sku: 'PK-BAG-1KG', name: '1kg Pouch', category: 'PACKAGING', uom: 'pcs' } })
-  const kibble = await prisma.item.create({ data: { sku: 'FG-CAT-ADULT-1KG-CHK', name: 'Cat Kibble Adult Chicken 1kg', category: 'FINISHED_GOOD', uom: 'bag' } })
+  await prisma.item.create({ data: { sku: 'FG-CAT-ADULT-1KG-CHK', name: 'Cat Kibble Adult Chicken 1kg', category: 'FINISHED_GOOD', uom: 'bag' } })
 
   // Lots
   await prisma.inventoryLot.createMany({
     data: [
-      { itemId: chickenMeal.id, lotNumber: 'CM240801', qty: 5000, uom: 'kg', status: 'QUARANTINE', binId: wh.id ? (await prisma.bin.findFirst({ where: { warehouseId: wh.id } }))?.id : null },
+      { itemId: chickenMeal.id, lotNumber: 'CM240801', qty: 5000, uom: 'kg', status: 'QUARANTINE', binId: binA01.id },
       { itemId: premix.id, lotNumber: 'PM2407A', qty: 400, uom: 'kg', status: 'RELEASED' },
       { itemId: bag.id, lotNumber: 'BAG2408', qty: 10000, uom: 'pcs', status: 'RELEASED' }
     ]
