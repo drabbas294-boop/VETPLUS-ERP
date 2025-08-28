@@ -21,6 +21,16 @@ A production-grade starter tailored for pet-food manufacturing ERP. It implement
    ```
 5. Sign in at `/login` with: `admin@example.com / admin123`
 
+### Verify the server
+With the dev server running the app listens on `http://localhost:3000`.  You can confirm the service is live by hitting the health check endpoint:
+
+```bash
+curl http://localhost:3000/api/health
+# {"status":"ok"}
+```
+
+Any API route (for example `curl http://localhost:3000/api/items`) should also respond while the server is running.
+
 ## Deploy on Hostinger (Node app)
 1. **MySQL**: create a database & user; whitelist your app; note connection details.
 2. Set environment variables in Hostinger dashboard (`DATABASE_URL`, `AUTH_SECRET`, `NEXTAUTH_URL`).
