@@ -1,4 +1,4 @@
-import SupplierForm from '@/SupplierForm'
+import SupplierForm from '@/components/SupplierForm'
 import { prisma } from '@/lib/prisma'
 
 async function loadSuppliers() {
