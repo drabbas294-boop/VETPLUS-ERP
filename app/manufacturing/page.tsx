@@ -1,5 +1,5 @@
-import BatchForm from '@/BatchForm'
-import BatchTable from '@/BatchTable'
+import BatchForm from '@/components/BatchForm'
+import BatchTable from '@/components/BatchTable'
 import { prisma } from '@/lib/prisma'
 
 async function loadBatches() {
