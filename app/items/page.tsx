@@ -1,5 +1,5 @@
-import ItemTable from '@/ItemTable'
-import NewItemForm from '@/NewItemForm'
+import ItemTable from '@/components/ItemTable'
+import NewItemForm from '@/components/NewItemForm'
 import { prisma } from '@/lib/prisma'
 
 async function loadItems() {
