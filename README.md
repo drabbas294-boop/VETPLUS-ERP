@@ -10,7 +10,11 @@ A production-grade starter tailored for pet-food manufacturing ERP. It implement
 
 ## Quick Start (Local)
 1. **Install Node.js 18+** and MySQL (XAMPP or Docker).
-2. Copy `.env.example` to `.env` and set `DATABASE_URL` (e.g. `mysql://root:password@localhost:3306/petfood_erp`).
+2. Copy `.env.example` to `.env` and set:
+   - `DATABASE_URL` (e.g. `mysql://root:password@localhost:3306/petfood_erp`)
+   - `NEXTAUTH_URL` (`http://localhost:3000` for local dev or your production URL)
+
+   NextAuth uses `NEXTAUTH_URL` to generate correct callback URLs.
 3. Create DB: `CREATE DATABASE petfood_erp;`
 4. Install deps & generate client:
    ```bash
@@ -23,7 +27,7 @@ A production-grade starter tailored for pet-food manufacturing ERP. It implement
 
 ## Deploy on Hostinger (Node app)
 1. **MySQL**: create a database & user; whitelist your app; note connection details.
-2. Set environment variables in Hostinger dashboard (`DATABASE_URL`, `AUTH_SECRET`, `NEXTAUTH_URL`).
+2. Set environment variables in Hostinger dashboard (`DATABASE_URL`, `AUTH_SECRET`, `NEXTAUTH_URL`). `NEXTAUTH_URL` must match your public domain so NextAuth can generate callback URLs.
 3. Build the app:
    ```bash
    npm ci
