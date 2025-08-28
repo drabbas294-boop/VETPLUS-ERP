@@ -24,10 +24,9 @@ A production-grade starter tailored for pet-food manufacturing ERP. It implement
 ## Deploy on Hostinger (Node app)
 1. **MySQL**: create a database & user; whitelist your app; note connection details.
 2. Set environment variables in Hostinger dashboard (`DATABASE_URL`, `AUTH_SECRET`, `NEXTAUTH_URL`).
-3. Build the app:
+3. Build the app (runs Prisma migrations automatically):
    ```bash
    npm ci
-   npx prisma migrate deploy
    npm run build
    npm start
    ```
