@@ -8,9 +8,16 @@ A production-grade starter tailored for pet-food manufacturing ERP. It implement
 - Prisma ORM (MySQL) — works on XAMPP MySQL or Hostinger
 - Clean modules: Items, Suppliers, Inventory Lots
 
+## Environment Variables
+The application relies on the following variables:
+
+- `DATABASE_URL` – MySQL connection string.
+- `AUTH_SECRET` – secret used to sign auth tokens.
+- `NEXTAUTH_URL` – base URL of the deployed app.
+
 ## Quick Start (Local)
 1. **Install Node.js 18+** and MySQL (XAMPP or Docker).
-2. Copy `.env.example` to `.env` and set `DATABASE_URL` (e.g. `mysql://root:password@localhost:3306/petfood_erp`).
+2. Copy `.env.example` to `.env` and set `DATABASE_URL`, `AUTH_SECRET`, and `NEXTAUTH_URL`.
 3. Create DB: `CREATE DATABASE petfood_erp;`
 4. Install deps & generate client:
    ```bash
