@@ -1,12 +1,12 @@
 # PetFood ERP (Next.js + Prisma + MySQL)
 
-A production-grade starter tailored for pet-food manufacturing ERP. It implements authentication, RBAC (role on user), and 3 live modules (Items, Suppliers, Inventory Lots) you can extend to cover formulation, QC, batches, sales, etc.
+A production-grade starter tailored for pet-food manufacturing ERP. It implements authentication, RBAC (role on user), and 3 live modules (Items, Suppliers, Inventory Lots) you can extend to cover formulation, QC, batches, sales, etc. The starter now also includes placeholder Quality Control, Maintenance, and Recipe Management modules that demonstrate how to separate UI components from business logic functions.
 
 ## Tech
 - Next.js App Router (TypeScript), Tailwind
 - NextAuth (Credentials) with JWT sessions
 - Prisma ORM (MySQL) — works on XAMPP MySQL or Hostinger
-- Clean modules: Items, Suppliers, Inventory Lots
+- Clean modules: Items, Suppliers, Inventory Lots, Quality, Maintenance, Recipes
 
 ## Environment Variables
 The application relies on the following variables:
