@@ -17,6 +17,7 @@ model User {
   updatedAt    DateTime @updatedAt
 
   sessions Session[]
+  assignedTickets ServiceTicket[]
 }
 
 model Session {
@@ -59,6 +60,7 @@ model Customer {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   orders      SalesOrder[]
+  serviceTickets ServiceTicket[]
 }
 
 model Warehouse {
@@ -102,6 +104,7 @@ model Item {
   formulations Formulation[]
   batches      ProductionBatch[]
   salesLines   SalesOrderLine[]
+  serviceTickets ServiceTicket[]
 }
 
 enum ItemCategory {
@@ -256,4 +259,25 @@ model COA {
   lot       InventoryLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
   url       String? // link to PDF stored elsewhere
   createdAt DateTime     @default(now())
+}
+
+model ServiceTicket {
+  id           String        @id @default(cuid())
+  customerId   String
+  customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  itemId       String
+  item         Item          @relation(fields: [itemId], references: [id])
+  description  String?
+  status       TicketStatus  @default(NEW)
+  assignedToId String?
+  assignedTo   User?         @relation(fields: [assignedToId], references: [id])
+  resolution   String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+enum TicketStatus {
+  NEW
+  ASSIGNED
+  CLOSED
 }
