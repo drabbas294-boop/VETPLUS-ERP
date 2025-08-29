@@ -11,13 +11,18 @@ export default function NewItemForm() {
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true); setMsg(null)
-    const res = await axios.post('/api/items', form)
-    setLoading(false)
-    if (res.status === 200) {
-      setMsg('Created')
-      setForm({ sku: '', name: '', category: 'RAW_MATERIAL', uom: 'kg' })
-      window.location.reload()
-    } else setMsg('Failed')
+    try {
+      const res = await axios.post('/api/items', form)
+      if (res.status === 200) {
+        setMsg('Created')
+        setForm({ sku: '', name: '', category: 'RAW_MATERIAL', uom: 'kg' })
+        window.location.reload()
+      }
+    } catch (err: any) {
+      setMsg(err.response?.data?.error || 'Failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

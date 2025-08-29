@@ -11,13 +11,18 @@ export default function SupplierForm() {
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true); setMsg(null)
-    const res = await axios.post('/api/suppliers', form)
-    setLoading(false)
-    if (res.status === 200) {
-      setMsg('Created')
-      setForm({ name: '', email: '', phone: '' })
-      window.location.reload()
-    } else setMsg('Failed')
+    try {
+      const res = await axios.post('/api/suppliers', form)
+      if (res.status === 200) {
+        setMsg('Created')
+        setForm({ name: '', email: '', phone: '' })
+        window.location.reload()
+      }
+    } catch (err: any) {
+      setMsg(err.response?.data?.error || 'Failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

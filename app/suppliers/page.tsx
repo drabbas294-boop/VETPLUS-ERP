@@ -1,4 +1,5 @@
 import SupplierForm from '@/SupplierForm'
+import SupplierTable from '@/SupplierTable'
 import { prisma } from '@/lib/prisma'
 
 async function loadSuppliers() {
@@ -17,24 +18,7 @@ export default async function Page() {
       <div className="mb-8">
         <SupplierForm />
       </div>
-      <table className="table">
-        <thead>
-          <tr>
-            <th className="th">Name</th>
-            <th className="th">Email</th>
-            <th className="th">Phone</th>
-          </tr>
-        </thead>
-        <tbody>
-          {suppliers.map(s => (
-            <tr key={s.id} className="hover:bg-gray-50">
-              <td className="td">{s.name}</td>
-              <td className="td">{s.email}</td>
-              <td className="td">{s.phone}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <SupplierTable suppliers={suppliers} />
     </div>
   )
 }
