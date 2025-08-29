@@ -102,6 +102,7 @@ model Item {
   formulations Formulation[]
   batches      ProductionBatch[]
   salesLines   SalesOrderLine[]
+  posLines     POSOrderLine[]
 }
 
 enum ItemCategory {
@@ -257,3 +258,33 @@ model COA {
   url       String? // link to PDF stored elsewhere
   createdAt DateTime     @default(now())
 }
+
+model POSOrder {
+  id        String          @id @default(cuid())
+  orderNo   String          @unique
+  total     Float
+  createdAt DateTime        @default(now())
+  lines     POSOrderLine[]
+  entries   AccountingEntry[]
+}
+
+model POSOrderLine {
+  id        String    @id @default(cuid())
+  orderId   String
+  order     POSOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemId    String
+  item      Item      @relation(fields: [itemId], references: [id])
+  qty       Float
+  unitPrice Float
+}
+
+model AccountingEntry {
+  id        String   @id @default(cuid())
+  posOrderId String
+  posOrder  POSOrder @relation(fields: [posOrderId], references: [id], onDelete: Cascade)
+  account   String
+  debit     Float    @default(0)
+  credit    Float    @default(0)
+  createdAt DateTime @default(now())
+}
+
