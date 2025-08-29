@@ -1,6 +1,7 @@
 import BatchForm from '@/BatchForm'
 import BatchTable from '@/BatchTable'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 
 async function loadBatches() {
   try {
@@ -14,6 +15,11 @@ async function loadBatches() {
 }
 
 export default async function Page() {
+  const role = (await auth())?.user.role
+  if (role !== 'ADMIN') {
+    return new Response('Forbidden', { status: 403 })
+  }
+
   const batches = await loadBatches()
   return (
     <div>

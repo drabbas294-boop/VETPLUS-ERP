@@ -1,5 +1,6 @@
 import SupplierForm from '@/SupplierForm'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 
 async function loadSuppliers() {
   try {
@@ -10,6 +11,11 @@ async function loadSuppliers() {
 }
 
 export default async function Page() {
+  const role = (await auth())?.user.role
+  if (role !== 'ADMIN') {
+    return new Response('Forbidden', { status: 403 })
+  }
+
   const suppliers = await loadSuppliers()
   return (
     <div>

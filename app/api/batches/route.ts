@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { getToken } from 'next-auth/jwt'
 
 const schema = z.object({
   fgItemId: z.string().min(1),
@@ -9,7 +10,11 @@ const schema = z.object({
   uom: z.string().min(1)
 })
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const token = await getToken({ req })
+  if (!token || token.role !== 'ADMIN') {
+    return new NextResponse('Forbidden', { status: 403 })
+  }
   const batches = await prisma.productionBatch.findMany({
     include: { fgItem: true },
     orderBy: { createdAt: 'desc' }
@@ -17,7 +22,11 @@ export async function GET() {
   return NextResponse.json(batches)
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const token = await getToken({ req })
+  if (!token || token.role !== 'ADMIN') {
+    return new NextResponse('Forbidden', { status: 403 })
+  }
   const data = await req.json()
   const parsed = schema.safeParse({ ...data, plannedQty: Number(data.plannedQty) })
   if (!parsed.success) return NextResponse.json({ error: parsed.error.format() }, { status: 400 })

@@ -1,5 +1,6 @@
 import SalesOrderForm from './SalesOrderForm'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 
 async function loadOrders() {
   try {
@@ -13,6 +14,11 @@ async function loadOrders() {
 }
 
 export default async function Page() {
+  const role = (await auth())?.user.role
+  if (role !== 'ADMIN') {
+    return new Response('Forbidden', { status: 403 })
+  }
+
   const orders = await loadOrders()
 
   return (

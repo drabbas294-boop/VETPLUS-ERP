@@ -1,6 +1,7 @@
 import ItemTable from '@/ItemTable'
 import NewItemForm from '@/NewItemForm'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 
 async function loadItems() {
   try {
@@ -11,6 +12,11 @@ async function loadItems() {
 }
 
 export default async function Page() {
+  const role = (await auth())?.user.role
+  if (role !== 'ADMIN') {
+    return new Response('Forbidden', { status: 403 })
+  }
+
   const items = await loadItems()
   return (
     <div>
