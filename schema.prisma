@@ -37,15 +37,16 @@ enum Role {
 }
 
 model Supplier {
-  id        String   @id @default(cuid())
-  name      String
-  email     String?
-  phone     String?
-  address   String?
-  score     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  items     Item[]
+  id            String          @id @default(cuid())
+  name          String
+  email         String?
+  phone         String?
+  address       String?
+  score         Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  items         Item[]
+  PurchaseOrder PurchaseOrder[]
 }
 
 model Customer {
@@ -95,13 +96,14 @@ model Item {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
 
-  specs        Spec[]
-  lots         InventoryLot[]
-  bomParents   BOMLine[]         @relation("BOMItemParent")
-  bomChildOf   BOMLine[]         @relation("BOMItemChild")
-  formulations Formulation[]
-  batches      ProductionBatch[]
-  salesLines   SalesOrderLine[]
+  specs             Spec[]
+  lots              InventoryLot[]
+  bomParents        BOMLine[]           @relation("BOMItemParent")
+  bomChildOf        BOMLine[]           @relation("BOMItemChild")
+  formulations      Formulation[]
+  batches           ProductionBatch[]
+  salesLines        SalesOrderLine[]
+  PurchaseOrderLine PurchaseOrderLine[]
 }
 
 enum ItemCategory {
@@ -256,4 +258,70 @@ model COA {
   lot       InventoryLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
   url       String? // link to PDF stored elsewhere
   createdAt DateTime     @default(now())
+}
+
+// Accounting Models
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+model Account {
+  id        String        @id @default(cuid())
+  code      String        @unique
+  name      String
+  type      AccountType
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  lines     JournalLine[]
+}
+
+model JournalEntry {
+  id          String        @id @default(cuid())
+  date        DateTime      @default(now())
+  description String?
+  createdAt   DateTime      @default(now())
+  lines       JournalLine[]
+}
+
+model JournalLine {
+  id        String       @id @default(cuid())
+  entryId   String
+  accountId String
+  debit     Float        @default(0)
+  credit    Float        @default(0)
+  entry     JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  account   Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+enum POStatus {
+  DRAFT
+  RECEIVED
+  INVOICED
+}
+
+model PurchaseOrder {
+  id         String              @id @default(cuid())
+  orderNo    String              @unique
+  supplierId String
+  supplier   Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  status     POStatus            @default(DRAFT)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  lines      PurchaseOrderLine[]
+}
+
+model PurchaseOrderLine {
+  id       String        @id @default(cuid())
+  orderId  String
+  itemId   String
+  qty      Float
+  uom      String
+  unitCost Float
+  order    PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  item     Item          @relation(fields: [itemId], references: [id])
 }
